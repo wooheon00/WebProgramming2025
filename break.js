@@ -5,6 +5,34 @@ const gameOverScreen = document.getElementById('gameOverScreen');
 const gameOverTitle = document.getElementById('gameOverTitle');
 const finalScoreElement = document.getElementById('finalScore');
 
+const marioImage = new Image();
+marioImage.src = 'img/mario.png';
+
+const luigiImage = new Image();
+luigiImage.src = 'img/luigi.png';
+
+const toadImage = new Image();
+toadImage.src = 'img/toad.png';
+
+const cloudImage = new Image();
+cloudImage.src = 'img/cloud.png'; 
+
+const cheepImage = new Image();
+cheepImage.src = 'img/cheep.png'; 
+
+const koongImage = new Image();
+koongImage.src = 'img/koong.png';
+
+const stage1Background = new Image();
+stage1Background.src = 'img/stage1.jpeg';
+    
+const stage2Background = new Image();
+stage2Background.src = 'img/stage2.jpeg';
+
+const stage3Background = new Image();
+stage3Background.src = 'img/stage3.jpeg';
+
+
 
 let selectedLevel = null;
 let selectedBallColor = null;
@@ -25,22 +53,22 @@ let ballLaunched = false;
 // 패들 (캐릭터)
 const paddle = {
     x: canvas.width / 2 - 50,
-    y: canvas.height - 40,
-    width: 100,
+    y: canvas.height -60,
+    width: 64,
     height: 30,
     speed: 8,
     powerUpTime: 0,
-    originalWidth: 100,
+    originalWidth: 64,
 };
 
 // 공 (파이어볼)
 const ball = {
     x: canvas.width / 2,
-    y: paddle.y - 15,
+    y: paddle.y - 10,
     radius: 8,
     dx: 3,
     dy: -3,
-    speed: 3,
+    speed: 3.0 + 1.0 * level,
     starPower: 0,
     trail: [],
 };
@@ -58,7 +86,7 @@ let blocks = [];
 let powerUps = [];
 
 let clouds = [];
-let squids = [];
+let cheeps = [];
 let koongs = [];
 
 let particles = [];
@@ -80,26 +108,25 @@ function createClouds() {
         });
     }
 }
-// 징오징오 생성
-function createSquids(count = 3) {
-    for (let i = 0; i < count; i++) {
-        squids.push({
+// 칩 생성
+function createCheeps() {
+    for (let i = 0; i < 6; i++) {
+        cheeps.push({
             x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height / 2,
-            size: 30,
-            speedY: 1 + Math.random() * 0.5,
+            y: Math.random() * 400,
+            width: 80 + Math.random() * 40,
+            speed: 0.5 + Math.random() * 0.5,
         });
     }
 }
 // 쿵쿵이 생성
-function createKoongs(count = 2) {
-    for (let i = 0; i < count; i++) {
+function createKoongs() {
+    for (let i = 0; i < 3; i++) {
         koongs.push({
             x: Math.random() * canvas.width,
-            y: canvas.height - 50,
-            size: 40,
-            speedX: 1 + Math.random(),
-            direction: Math.random() < 0.5 ? 1 : -1, // 좌우 랜덤 방향
+            y: Math.random() * 300,
+            width: 80 + Math.random() * 40,
+            speed: 0.5 + Math.random() * 0.5,
         });
     }
 }
@@ -140,7 +167,7 @@ function createBlocks() {
                 hits = -1;
             } else if (rand < 0.15) {
                 type = 'question';
-            } else if (rand < 0.25) {
+            } else if (rand < 0.2) {
                 type = 'coin';
             }
 
@@ -176,140 +203,82 @@ function createPowerUp(x, y) {
 ////////////////////////캐릭터 그리기///////////////////////////////
 // 마리오 그리기
 function drawMario() {
-    const x = paddle.x;
-    const y = paddle.y;
+    const marioWidth = 64;
+    const marioHeight = 64;
 
-    // 몸통 (빨간색)
-    ctx.fillStyle = '#E52521';
-    ctx.fillRect(x + 35, y + 10, 30, 15);
+    // 마리오를 paddle 중앙에 정렬
+    const marioX = paddle.x + paddle.width / 2 - marioWidth / 2;
+    const marioY = paddle.y;
 
-    // 바지 (파란색)
-    ctx.fillStyle = '#0000FF';
-    ctx.fillRect(x + 35, y + 20, 30, 10);
+    // 바: 패들 위에, 마리오 중앙 위로
+    const barWidth = paddle.width;
+    const barHeight = 6;
+    const barX = paddle.x;
+    const barY = paddle.y - barHeight - 1;
 
-    // 얼굴
-    ctx.fillStyle = '#FDB8A0';
-    ctx.fillRect(x + 40, y, 20, 15);
+    // 검은 바 그리기
+    ctx.fillStyle = 'red';
+    ctx.fillRect(barX, barY, barWidth, barHeight);
 
-    // 모자
-    ctx.fillStyle = '#E52521';
-    ctx.fillRect(x + 35, y - 5, 30, 10);
+    // 디버깅용 배경 (선택사항)
+    ctx.fillStyle = 'rgba(128, 128, 128, 0.3)';
+    ctx.fillRect(marioX, marioY, marioWidth, marioHeight);
 
-    // 수염
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(x + 42, y + 8, 16, 2);
-
-    // 눈
-    ctx.fillRect(x + 44, y + 4, 3, 3);
-    ctx.fillRect(x + 53, y + 4, 3, 3);
-
-    // 팔
-    ctx.fillStyle = '#FDB8A0';
-    ctx.fillRect(x + 30, y + 12, 5, 8);
-    ctx.fillRect(x + 65, y + 12, 5, 8);
-
-    // 장갑
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(x + 28, y + 18, 7, 7);
-    ctx.fillRect(x + 65, y + 18, 7, 7);
-
-    // 신발
-    ctx.fillStyle = '#8B4513';
-    ctx.fillRect(x + 33, y + 25, 15, 5);
-    ctx.fillRect(x + 52, y + 25, 15, 5);
+    // 마리오 이미지 그리기
+    ctx.drawImage(marioImage, marioX, marioY, marioWidth, marioHeight);
 }
+
 // 루이지 그리기
 function drawLuigi() {
-    const x = paddle.x;
-    const y = paddle.y;
+    const luigiWidth = 64;
+    const luigiHeight = 64;
 
-    // 몸통 (초록색)
-    ctx.fillStyle = '#00A86B';
-    ctx.fillRect(x + 35, y + 5, 30, 20);
+    // 마리오를 paddle 중앙에 정렬
+    const luigiX = paddle.x + paddle.width / 2 - luigiWidth / 2;
+    const luigiY = paddle.y;
 
-    // 바지 (파란색)
-    ctx.fillStyle = '#0000FF';
-    ctx.fillRect(x + 35, y + 20, 30, 10);
+    // 바: 패들 위에, 마리오 중앙 위로
+    const barWidth = paddle.width;
+    const barHeight = 6;
+    const barX = paddle.x;
+    const barY = paddle.y - barHeight - 1;
 
-    // 얼굴
-    ctx.fillStyle = '#FDB8A0';
-    ctx.fillRect(x + 40, y - 5, 20, 15);
+    // 검은 바 그리기
+    ctx.fillStyle = 'green';
+    ctx.fillRect(barX, barY, barWidth, barHeight);
 
-    // 모자
-    ctx.fillStyle = '#00A86B';
-    ctx.fillRect(x + 35, y - 10, 30, 8);
+    // 디버깅용 배경 (선택사항)
+    ctx.fillStyle = 'rgba(128, 128, 128, 0.3)';
+    ctx.fillRect(luigiX, luigiY, luigiWidth, luigiHeight);
 
-    // 수염
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(x + 42, y + 2, 16, 2);
-
-    // 눈
-    ctx.fillRect(x + 44, y - 2, 3, 3);
-    ctx.fillRect(x + 53, y - 2, 3, 3);
-
-    // 팔
-    ctx.fillStyle = '#FDB8A0';
-    ctx.fillRect(x + 30, y + 10, 5, 10);
-    ctx.fillRect(x + 65, y + 10, 5, 10);
-
-    // 장갑
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(x + 28, y + 18, 7, 7);
-    ctx.fillRect(x + 65, y + 18, 7, 7);
-
-    // 신발
-    ctx.fillStyle = '#8B4513';
-    ctx.fillRect(x + 33, y + 28, 15, 5);
-    ctx.fillRect(x + 52, y + 28, 15, 5);
+    // 마리오 이미지 그리기
+    ctx.drawImage(luigiImage, luigiX, luigiY, luigiWidth, luigiHeight);
 }
 // 토드 그리기
 function drawToad() {
-    const x = paddle.x;
-    const y = paddle.y;
+    const toadWidth = 64;
+    const toadHeight = 64;
 
-    // 몸통 (파란 조끼 + 베이지색 바지)
-    ctx.fillStyle = '#1E90FF'; // 조끼
-    ctx.fillRect(x + 37, y + 15, 26, 10);
+    // 마리오를 paddle 중앙에 정렬
+    const toadX = paddle.x + paddle.width / 2 - toadWidth / 2;
+    const toadY = paddle.y;
 
-    ctx.fillStyle = '#F5DEB3'; // 바지
-    ctx.fillRect(x + 37, y + 25, 26, 10);
+    // 바: 패들 위에, 마리오 중앙 위로
+    const barWidth = paddle.width;
+    const barHeight = 6;
+    const barX = paddle.x;
+    const barY = paddle.y - barHeight - 1;
 
-    // 얼굴
-    ctx.fillStyle = '#FFF5E1';
-    ctx.fillRect(x + 40, y, 20, 15);
+    // 검은 바 그리기
+    ctx.fillStyle = 'white';
+    ctx.fillRect(barX, barY, barWidth, barHeight);
 
-    // 모자 (버섯 머리)
-    ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath();
-    ctx.arc(x + 50, y - 5, 15, 0, Math.PI * 2);
-    ctx.fill();
+    // 디버깅용 배경 (선택사항)
+    ctx.fillStyle = 'rgba(128, 128, 128, 0.3)';
+    ctx.fillRect(toadX, toadY, toadWidth, toadHeight);
 
-    // 빨간 점들 (버섯 무늬)
-    ctx.fillStyle = '#FF0000';
-    ctx.beginPath();
-    ctx.arc(x + 50, y - 12, 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(x + 40, y - 5, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(x + 60, y - 5, 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    // 눈
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(x + 45, y + 4, 2, 5);
-    ctx.fillRect(x + 53, y + 4, 2, 5);
-
-    // 팔
-    ctx.fillStyle = '#FFF5E1';
-    ctx.fillRect(x + 30, y + 17, 5, 10);
-    ctx.fillRect(x + 65, y + 17, 5, 10);
-
-    // 신발
-    ctx.fillStyle = '#8B4513';
-    ctx.fillRect(x + 35, y + 33, 12, 5);
-    ctx.fillRect(x + 53, y + 33, 12, 5);
+    // 마리오 이미지 그리기
+    ctx.drawImage(toadImage, toadX, toadY, toadWidth, toadHeight);
 }
 ///////////////////////////////////////////////////////////////////
 
@@ -554,63 +523,38 @@ function drawStar(cx, cy, spikes, outerRadius, innerRadius) {
 
 // 구름 그리기
 function drawClouds() {
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
     clouds.forEach((cloud) => {
-        ctx.beginPath();
-        ctx.arc(cloud.x, cloud.y, 20, 0, Math.PI * 2);
-        ctx.arc(cloud.x + 25, cloud.y, 25, 0, Math.PI * 2);
-        ctx.arc(cloud.x + 50, cloud.y, 20, 0, Math.PI * 2);
-        ctx.arc(cloud.x + 15, cloud.y - 10, 15, 0, Math.PI * 2);
-        ctx.arc(cloud.x + 35, cloud.y - 10, 20, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.drawImage(
+            cloudImage,
+            cloud.x - 25,  // 50 / 2
+            cloud.y - 25,
+            100,
+            40
+        );
     });
 }
-// 징오징오 그리기
-function drawSquids() {
-    squids.forEach((squid) => {
-        // 움직임
-        squid.y += squid.speedY;
-        if (squid.y > canvas.height) squid.y = -squid.size;
-
-        // 징오징오 그리기 (단순화된 모습)
-        ctx.fillStyle = 'white';
-        ctx.beginPath();
-        ctx.arc(squid.x, squid.y, squid.size / 2, 0, Math.PI * 2); // 머리
-        ctx.fill();
-        ctx.closePath();
-
-        // 다리 (아래에 선 몇 개)
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 2;
-        for (let i = -1; i <= 1; i++) {
-            ctx.beginPath();
-            ctx.moveTo(squid.x + i * 5, squid.y + squid.size / 2);
-            ctx.lineTo(squid.x + i * 5, squid.y + squid.size);
-            ctx.stroke();
-        }
+// 칩 그리기
+function drawCheeps() {
+    cheeps.forEach((cheep) => {
+        ctx.drawImage(
+            cheepImage,
+            cheep.x - 25,  // 50 / 2
+            cheep.y - 25,
+            100,
+            100
+        );
     });
 }
 // 쿵쿵이 그리기
 function drawKoongs() {
-    koongs.forEach((koong) => {
-        // 움직임
-        koong.x += koong.speedX * koong.direction;
-        if (koong.x < 0 || koong.x > canvas.width - koong.size) koong.direction *= -1;
-
-        // 쿵쿵이 그리기 (단순한 네모 몸체 + 눈)
-        ctx.fillStyle = 'brown';
-        ctx.fillRect(koong.x, koong.y - koong.size, koong.size, koong.size);
-
-        // 눈 그리기
-        ctx.fillStyle = 'white';
-        ctx.fillRect(koong.x + 5, koong.y - koong.size + 10, 10, 10);
-        ctx.fillRect(koong.x + koong.size - 15, koong.y - koong.size + 10, 10, 10);
-
-        ctx.fillStyle = 'black';
-        ctx.beginPath();
-        ctx.arc(koong.x + 10, koong.y - koong.size + 15, 3, 0, Math.PI * 2);
-        ctx.arc(koong.x + koong.size - 10, koong.y - koong.size + 15, 3, 0, Math.PI * 2);
-        ctx.fill();
+        koongs.forEach((koong) => {
+        ctx.drawImage(
+            koongImage,
+            koong.x - 25,  // 50 / 2
+            koong.y - 25,
+            120,
+            100
+        );
     });
 }
 
@@ -765,16 +709,13 @@ function paddlePowerUpCollision() {
                     paddle.powerUpTime = 360;
                     break;
                 case 'fireFlower':
-                    ball.speed = 5;
-                    setTimeout(() => {
-                        ball.speed = 3 + level * 0.3;
-                    }, 5000);
+                    score += 200;
                     break;
                 case 'star':
                     ball.starPower = 360;
                     break;
                 case 'coin':
-                    score += 100;
+                    lives++;
                     break;
             }
 
@@ -800,11 +741,11 @@ function update() {
     // 공 발사
     if (!ballLaunched) {
         ball.x = paddle.x + paddle.width / 2;
-        ball.y = paddle.y - ball.radius - 1;
+        ball.y = paddle.y - ball.radius - 6;
         if (keys[' ']) {
             ballLaunched = true;
-            ball.dx = 3;
-            ball.dy = -3;
+            ball.dx = ball.speed;
+            ball.dy = -ball.speed;
         }
     } else {
         // 공 이동
@@ -825,8 +766,8 @@ function update() {
         if (ball.y + ball.radius > canvas.height) {
             lives--;
             ballLaunched = false;
-            ball.dx = 3;
-            ball.dy = -3;
+            ball.dx = ball.speed;
+            ball.dy = ball.speed;
             ball.trail = [];
 
             if (lives <= 0) {
@@ -870,6 +811,24 @@ function update() {
         }
     });
 
+    // 칩 이동
+    cheeps.forEach((cheep) => {
+        cheep.x -= cheep.speed;
+        if (cheep.x < -100) {
+            cheep.x = canvas.width + 100;
+            cheep.y = Math.random() * 200;
+        }
+    });
+
+    // 쿵쿵이 이동
+    koongs.forEach((koong) => {
+        koong.x += koong.speed;
+        if (koong.x > canvas.width + 100) {
+            koong.x = -100;
+            koong.y = Math.random() * 200;
+        }
+    });
+
     // 레벨 클리어 체크
     let blocksRemaining = 0;
     for (let r = 0; r < blockRows; r++) {
@@ -896,14 +855,13 @@ function update() {
 function draw() {
 
     // 배경
-    if (level == 1) {
-        ctx.fillStyle = '#5C94FC';
-    } else if (level == 2) {
-        ctx.fillStyle = '#0000ff';
+    if (level === 1) {
+        ctx.drawImage(stage1Background, 0, 0, canvas.width, canvas.height);
+    } else if (level === 2) {
+        ctx.drawImage(stage2Background, 0, 0, canvas.width, canvas.height);
     } else {
-        ctx.fillStyle = '#ff0000';
+        ctx.drawImage(stage3Background, 0, 0, canvas.width, canvas.height);
     }
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 
 
@@ -911,7 +869,7 @@ function draw() {
     if (level == 1) {
         drawClouds();
     } else if (level == 2) {
-        drawSquids();
+        drawCheeps();
     } else {
         drawKoongs();
     }
@@ -946,10 +904,11 @@ function init() {
 
     createClouds();
     createKoongs();
-    createSquids();
+    createCheeps();
 
     gameLoop();
 }
+
 
 // 게임 리셋
 function resetGame() {
@@ -971,7 +930,7 @@ function resetGame() {
     particles = [];
     createBlocks();
     gameOverScreen.classList.add('hidden');
-
+ 
 
     gameState = 'start';
     startScreen.classList.remove('hidden');
@@ -984,9 +943,9 @@ function nextLevel() {
     ballLaunched = false;
     ball.x = canvas.width / 2;
     ball.y = paddle.y - 15;
-    ball.dx = 3 + level * 0.3;
-    ball.dy = -(3 + level * 0.3);
-    ball.speed = 3 + level * 0.3;
+    ball.dx = 3.0 + 1.0 * level;;
+    ball.dy = -(3.0 + 1.0 * level);
+    ball.speed = 3.0 + 1.0 * level;
     ball.trail = [];
     powerUps = [];
     particles = [];
@@ -1004,6 +963,9 @@ document.addEventListener('keydown', (e) => {
         selectedBallColor = document.getElementById("ballColor").value;
         selectedCharacter = document.getElementById("characterSelect").value;
         level = selectedLevel;
+
+        ball.speed = 3.0 + 0.6 * level;
+        createBlocks();
 
         gameState = 'playing';
         startScreen.classList.add('hidden');
@@ -1029,10 +991,34 @@ canvas.addEventListener('mousemove', (e) => {
 canvas.addEventListener('click', () => {
     if (gameState === 'playing' && !ballLaunched) {
         ballLaunched = true;
-        ball.dx = 3;
-        ball.dy = -3;
+        ball.dx = ball.speed;
+        ball.dy = -ball.speed;
     }
 });
 
-// 게임 시작
-init();
+
+//인트로
+const intro = document.getElementById('introOverlay');
+  const skipBtn = document.getElementById('skipButton');
+  const introGif = document.getElementById('introGif');
+  const startMessage = document.getElementById('startMessage');
+
+  let gifTimer;
+
+  // 1. 10초 후 GIF를 숨기고 문구 보여줌
+  gifTimer = setTimeout(() => {
+    introGif.style.display = 'none';
+    startMessage.style.display = 'block';
+  }, 10000);
+
+  // 2. Skip 버튼을 누르면 모든 intro 요소 제거
+  skipBtn.addEventListener('click', () => {
+    clearTimeout(gifTimer); // gif 타이머 취소
+    intro.style.display = 'none'; // 전체 인트로 숨김
+  });
+
+window.onload = function () {
+      
+    init();  // 이미지, 캔버스 등 페이지 로드 완료 후 게임 시작
+
+};
